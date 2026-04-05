@@ -9,6 +9,7 @@ Three-stage taxonomy checkpoint pipeline:
 from __future__ import annotations
 
 import io
+import pickle
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict
@@ -46,6 +47,22 @@ def _prune_taxonomy_heads(model: TaxonomyClassifier, amount: float) -> None:
         prune.remove(m, "weight")
 
 
+def _validate_pytorch_checkpoint_file(path: Path) -> None:
+    """Reject Git LFS pointers and obvious non-checkpoint text before ``torch.load``."""
+    if not path.is_file():
+        raise FileNotFoundError(f"Checkpoint not found: {path}")
+    head = path.read_bytes()[:512]
+    if head.startswith(b"version https://git-lfs.github.com/spec/v1"):
+        raise RuntimeError(
+            f"{path} is a Git LFS pointer, not the real checkpoint. "
+            "Run `git lfs pull`, or copy the full `.pt` from the machine where you trained."
+        )
+    if path.stat().st_size < 4096 and head.lstrip().startswith(b"version"):
+        raise RuntimeError(
+            f"{path} is tiny and looks like a text stub (often LFS or wrong file), not a PyTorch `.pt`."
+        )
+
+
 def load_float_taxonomy_from_ckpt(ckpt: Dict[str, Any]) -> TaxonomyClassifier:
     maps = ckpt["maps"]
     backbone = str(ckpt.get("backbone", "efficientnet_b0"))
@@ -69,7 +86,15 @@ def compress_taxonomy_checkpoint(
     src_path = Path(src_path)
     dst_path = Path(dst_path)
 
-    ckpt = torch.load(src_path, map_location="cpu", weights_only=False)
+    _validate_pytorch_checkpoint_file(src_path)
+    try:
+        ckpt = torch.load(src_path, map_location="cpu", weights_only=False)
+    except pickle.UnpicklingError as e:
+        raise RuntimeError(
+            f"Could not unpickle {src_path}. It is not a valid `torch.save` checkpoint "
+            "(common cause: Git LFS pointer checked out as text, or wrong file). "
+            f"Original error: {e}"
+        ) from e
     model = load_float_taxonomy_from_ckpt(ckpt)
     model.cpu()
 
@@ -118,10 +143,17 @@ def compress_taxonomy_checkpoint(
 def load_taxonomy_checkpoint_auto(path: str | Path, map_location: str | torch.device = "cpu") -> Dict[str, Any]:
     """Load .pt whether plain torch or Huffman-wrapped."""
     path = Path(path)
+    _validate_pytorch_checkpoint_file(path)
     blob = path.read_bytes()
     if blob.startswith(b"FISHQC1"):
         blob = huffman_decode(blob)
-    return torch.load(io.BytesIO(blob), map_location=map_location, weights_only=False)
+    try:
+        return torch.load(io.BytesIO(blob), map_location=map_location, weights_only=False)
+    except pickle.UnpicklingError as e:
+        raise RuntimeError(
+            f"Could not unpickle {path}. It is not a valid taxonomy checkpoint. "
+            f"Original error: {e}"
+        ) from e
 
 
 def build_quantized_taxonomy_for_inference(ckpt: Dict[str, Any]) -> TaxonomyClassifier:
@@ -149,3 +181,6 @@ def load_taxonomy_for_inference(ckpt: Dict[str, Any]) -> TaxonomyClassifier:
     if comp.get("quantized"):
         return build_quantized_taxonomy_for_inference(ckpt)
     return load_float_taxonomy_from_ckpt(ckpt)
+
+
+validate_taxonomy_checkpoint_file = _validate_pytorch_checkpoint_file
