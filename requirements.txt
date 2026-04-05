@@ -1,0 +1,32 @@
+# Core ML
+torch
+torchvision
+
+# Data + metrics
+numpy
+pandas>=2.2,<3
+scikit-learn
+matplotlib
+seaborn
+tqdm
+pillow
+pyyaml
+pycocotools
+scipy
+
+# Experiment tracking (optional but useful in notebooks)
+tensorboard
+
+# UI demo
+gradio
+
+# Federated learning (simulated FedAvg)
+flwr
+
+# Notebooks (kernel + UI)
+jupyter
+ipykernel
+
+# Gradio compatibility (gradio expects HfFolder which was removed in huggingface_hub 1.x)
+huggingface-hub<1.0.0
+
