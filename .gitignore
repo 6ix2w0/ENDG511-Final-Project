@@ -1,6 +1,6 @@
 outputs/compression_ablation_tmp/
 
-data/raw/fishnet/
+data/raw/fishnet/images
 .venv
 
 # Local backbone weight files (TorchVision / timm naming)
