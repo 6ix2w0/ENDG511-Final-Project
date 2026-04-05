@@ -1,3 +1,7 @@
-# FishNet images + annotations (large local download; see notebook 01)
+
 data/raw/fishnet/
 .venv
+
+# Local backbone weight files (TorchVision / timm naming)
+efficientnet_b0_rwightman-7f5810bc.pth
+resnet50-11ad3fa6.pth
