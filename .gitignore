@@ -1,2 +1,8 @@
-.venv
+outputs/compression_ablation_tmp/
+
 data/raw/fishnet/
+.venv
+
+# Local backbone weight files (TorchVision / timm naming)
+efficientnet_b0_rwightman-7f5810bc.pth
+resnet50-11ad3fa6.pth

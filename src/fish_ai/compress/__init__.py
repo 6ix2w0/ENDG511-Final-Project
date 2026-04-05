@@ -8,6 +8,7 @@ from fish_ai.compress.pipeline import (
     load_taxonomy_checkpoint_auto,
     load_taxonomy_for_inference,
     maps_to_head_sizes,
+    validate_taxonomy_checkpoint_file,
 )
 
 __all__ = [
@@ -18,4 +19,5 @@ __all__ = [
     "load_taxonomy_checkpoint_auto",
     "load_taxonomy_for_inference",
     "maps_to_head_sizes",
+    "validate_taxonomy_checkpoint_file",
 ]

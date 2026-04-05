@@ -23,6 +23,7 @@ This repo builds an AI tool that classifies fish images into **family / genus / 
 - `06_compare_all_methods.ipynb` — plots / tables (regenerate via `python scripts/gen_nb06.py`)
 - `07_gradio_demo.ipynb` — local taxonomy demo (full image)
 - `08_model_compression.ipynb` — prune → INT8 → Huffman-style blob (taxonomy checkpoints)
+- `09_compression_metrics.ipynb` — after `08`: compare size, CPU latency, val metrics across compression stages (regenerate via `python scripts/gen_nb09.py`)
 
 ## Sources
 
