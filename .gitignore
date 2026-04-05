@@ -1,0 +1,3 @@
+# FishNet images + annotations (large local download; see notebook 01)
+data/raw/fishnet/
+.venv
